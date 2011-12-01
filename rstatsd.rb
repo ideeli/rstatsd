@@ -37,27 +37,6 @@ options = { :cfg_file => File.dirname(__FILE__)+'/rstatsd.yaml',
 
 cfg = YAML.load_file(options[:cfg_file])
 
-cmds = [ 
-  { :cmd => "while : ; do cat /Users/aaron/tmp/accesslog; done",
-    :regexes => [
-      { :regex => '(?<http_method>[A-Z]+)\s.*?\sHTTP/1\.1"\s(?<http_code>\d+)\s',
-        :metrics => %w[details.aggregate details.individual],
-        :statsd => true,
-        :carbon => false },
-      { :regex => '^.*$',   # match every line
-        :metrics => %w[requests.aggregate requests.individual],
-        :statsd => true,
-        :carbon => false } ,
-    ]
-  }
-]
-
-
-cfg = { :metric_prefix => "foo.bar.myhost",
-        :cmds => cmds,
-        :statsd => { :host => 'ec2-184-72-135-104.compute-1.amazonaws.com', :port => 8125 },
-        :carbon => {},}
-
 cmd = cfg[:cmds][0]
 
 
