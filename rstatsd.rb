@@ -76,7 +76,6 @@ class ProcessCtl
       STDERR.reopen STDOUT
     end
     write_pid unless pidfile == ""
-    `echo "I'm here!!!" >> /tmp/foo.txt`
     trap(:INT)  { stop }
     trap(:TERM) { stop }
     yield
@@ -190,8 +189,8 @@ module RStatsd
     end
 
     def execute!
-      trap(:INT)  { Process.kill(:INT,  pipe.pid) }
-      trap(:TERM) { Process.kill(:TERM, pipe.pid) }
+      trap(:INT)  { logit("Caught SIGINT.  Exiting");  Process.kill(:INT,  pipe.pid) }
+      trap(:TERM) { logit("Caught SIGTERM.  Exiting"); Process.kill(:TERM, pipe.pid) }
       h = {}
       
       logit("Starting thread for command #{@command}")
