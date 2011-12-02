@@ -49,12 +49,13 @@ class ProcessCtl
   end
 
   def start 
-    trap(:INT)     { cleanup; stop }
-    trap(:SIGTERM) { cleanup; stop }
+    trap(:INT)  { stop ; cleanup}
+    trap(:TERM) { stop ; cleanup}
 
-    size = get_running_pids.size
-    if size > 0
-      puts "Daemon is already running"
+    pids = get_running_pids
+    if pids.size > 0
+      puts "Daemon is already running (pids #{pids.join(',')})"
+
       return 1
     end
 
@@ -75,6 +76,9 @@ class ProcessCtl
       STDERR.reopen STDOUT
     end
     write_pid unless pidfile == ""
+    `echo "I'm here!!!" >> /tmp/foo.txt`
+    trap(:INT)  { stop }
+    trap(:TERM) { stop }
     yield
     return 0
   end
@@ -83,14 +87,16 @@ class ProcessCtl
     # call user code if defined
     begin 
       yield 
-    rescue
+    rescue Exception => e
+    ensure
+      get_running_pids.uniq.each do |pid|
+        puts "Killing pid #{pid}"
+        cleanup if pid == @pid.to_i
+        Process.kill("TERM", pid)
+        # can't do anything below here.  Process is dead
+      end
+      return 0
     end
-    get_running_pids.uniq.each do |pid|
-      puts "Killing pid #{pid}"
-      Process.kill("INT", pid)
-      # can't do anything below here.  Process is dead
-    end
-    return 0
   end
 
   # returns the exit status (1 if not running, 0 if running)
@@ -114,21 +120,31 @@ protected
     end
   end
 
+  def pid_is_running ( pid )
+    !@allpids.select { |x| x[0] == pid }.empty?
+  end
+
   def get_running_pids
-    return get_child_pids(pid) if @pid
+    return get_child_pids(@pid) if @pid
     result = []
     if File.file? @pidfile
-      pid = File.read @pidfile
-      #result = `ps -p #{pid} -o pid | sed 1d`.to_a.map!{|x| x.to_i}
-      @allpids = `ps -ef |sed 1d`.to_a.map { |x| a = x.strip.split(/\s+/); [a[1].to_i,a[2].to_i] }
-      puts "getting children of #{pid}"
-      result = get_child_pids(pid.to_i) 
-      pp result
+      pid = File.read(@pidfile)
+      pid = pid.to_i
+      get_allpids
+      if pid_is_running(pid)
+        result = get_child_pids(pid.to_i)
+        result << pid.to_i
+      end
     end
     return result
   end
 
+  def get_allpids
+    @allpids = `ps -ef |sed 1d`.to_a.map { |x| a = x.strip.split(/\s+/); [a[1].to_i,a[2].to_i] }
+  end
 
+  # thar be recursion ahead, matey
+  # get a list of all child pids
   def get_child_pids ( ppid )
     child_pids = @allpids.select { |x| x[1] == ppid }.map { |x| x[0] }
     pids = child_pids
@@ -174,12 +190,12 @@ module RStatsd
     end
 
     def execute!
+      trap(:INT)  { Process.kill(:INT,  pipe.pid) }
+      trap(:TERM) { Process.kill(:TERM, pipe.pid) }
       h = {}
       
       logit("Starting thread for command #{@command}")
       pipe = IO.popen(@command)
-      trap(:INT) { Process.kill(:INT, pipe.pid) }
-
       begin
         pipe.each_with_index do |l,i|
           @regexes.each { |r| h = r.get_increments(l, h) }
@@ -190,12 +206,12 @@ module RStatsd
             h = {}
           end
           # this is for debugging
-          sleep(rand/100)
+#sleep(rand/100)
         end
       rescue Exception => e
         logit(e, Logger::ERROR)
       ensure
-        Process.kill("INT", pipe.pid) 
+        Process.kill(:TERM, pipe.pid) 
       end
     end
 
@@ -260,7 +276,7 @@ end
 options = { :cfg_file  => File.dirname(__FILE__)+'/rstatsd.yaml',
             :pidfile   => '/tmp/rstatsd.pid',
             :ctl_cmd   => ARGV[0],
-            :daemonize => false }
+            :daemonize => true }
 
 cfg = YAML.load_file(options[:cfg_file])
 
@@ -292,12 +308,13 @@ when ProcessCtl::STOPCMD
 when ProcessCtl::STATUSCMD 
   exit pc.status
 else
+#  commands.each_with_index do |c,i| 
+#    fork { c.execute! }
+#    $0 = "rstatsd.rb##{i}"
+#  end
   code = pc.start do
-    commands.each do |c| 
-      thread = Thread.new { c.execute! }
-      threads << thread
-    end
-    threads.each { |t| t.join } ;
+    commands.each { |c| threads << Thread.new { c.execute! } }
+    threads.each  { |t| t.join }
   end
   exit code
 end
