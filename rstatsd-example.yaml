@@ -1,33 +1,29 @@
 --- 
-:carbon: {}
-:logfile: "/Users/aaron/tmp/rstatsd.log"
-:loglevel: "DEBUG"
+:logfile: "/var/log/rstatsd.log"
+:loglevel: "INFO"
 :cmds: 
-- :cmd: "while : ; do cat /Users/aaron/tmp/accesslog; done"
+- :cmd: "tail -F /var/log/nginx/www.access_log"
   :every: 100
   :regexes: 
-  - :carbon: false
-    :regex: '(?<http_method>[A-Z]+)\s.*?\sHTTP/1\.1"\s(?<http_code>\d+)\s'
+  - :regex: '(?<http_method>[A-Z]+)\s.*?\sHTTP/1\.1"\s(?<http_code>\d+)\s'
     :metrics: 
     - "t1.aggregate"
     - "t1.individual"
     :statsd: true
-  - :carbon: false
-    :regex: '^.*$'
+  - :regex: '^.*$'
     :metrics: 
     - "t1.requests.aggregate"
     - "t1.requests.individual"
     :statsd: true
-- :cmd: "while : ; do cat /Users/aaron/tmp/accesslog; done"
+- :cmd: "tail -F /var/log/nginx/admin.access_log"
   :every: 500
   :regexes: 
-  - :carbon: false
-    :regex: '(?<http_method>[A-Z]+)\s.*?\sHTTP/1\.1"\s(?<http_code>\d+)\s'
+  - :regex: '(?<http_method>[A-Z]+)\s.*?\sHTTP/1\.1"\s(?<http_code>\d+)\s'
     :metrics: 
     - "t2.aggregate"
     - "t2.individual"
     :statsd: true
-:metric_prefix: "foo.bar.myhost."
+:metric_prefix: "com.example.www."
 :statsd: 
-  :host: "ec2-184-72-135-104.compute-1.amazonaws.com"
+  :host: "graphite.example.com"
   :port: 8125

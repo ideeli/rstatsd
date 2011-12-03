@@ -6,10 +6,10 @@
 
 require 'pp'
 require 'yaml'
+require 'logger'
+require 'optparse'
 require 'rubygems'
 require 'statsd'
-require 'logger'
-
 
 # this program needs named capture groups, which are not available
 # in Ruby 1.8.x
@@ -274,8 +274,29 @@ end
 
 options = { :cfg_file  => File.dirname(__FILE__)+'/rstatsd.yaml',
             :pidfile   => '/tmp/rstatsd.pid',
-            :ctl_cmd   => ARGV[0],
-            :daemonize => true }
+            :ctl_cmd   => "start",
+            :daemonize => false }
+
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options]"
+  opts.on("-d", "--[no-]daemonize", "Daemonize (default #{options[:daemonize]})") do |v|
+    options[:daemonize] = v
+  end
+  opts.on("-c", "--config FILE", String, "Configuration file (default #{options[:cfg_file]})") do |v|
+    options[:cfg_file] = v
+  end
+  opts.on("-p", "--pidfile FILE", String, "PID file (default #{options[:pidfile]})") do |v|
+    options[:pidfile] = v
+  end
+  opts.on("-k", "--command COMMAND", [:start,:stop,:status], "Command (start|stop|status)") do |v|
+    options[:ctl_cmd] = v
+  end
+  opts.on_tail("-h", "--help", "Show this message") do
+    puts opts
+    exit
+  end
+end.parse!
 
 cfg = YAML.load_file(options[:cfg_file])
 
