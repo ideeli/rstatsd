@@ -105,7 +105,7 @@ For example,
         - "blog.requests"
 
 
-This will only send data to statsd every 100 lines, thus reducing UDP traffic by 100x.  Never make the `:every` value less than what you expect your minimum traffic will be per unit time as defined in statsd and carbon.
+This will only send data to statsd every 100 lines, thus reducing UDP traffic by 100x.  Never make the `:every` value less than what you expect your minimum traffic will be per aggregation interval as defined in statsd and carbon.
 
 other cool stuff
 ----------------
