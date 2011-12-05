@@ -6,7 +6,7 @@ rstatsd is a daemon that takes the output of multiple commands and sends the out
 
 installation
 ------------
-It's not a gem yet.  I suck.  In the meantime, you can install rstatsd like this:
+It's not a gem yet.  In the meantime, you can install rstatsd like this:
 
     gem install statsd-client
     git clone https://9minutesnooze@github.com/9minutesnooze/rstatsd.git
@@ -114,8 +114,8 @@ You can specify multiple `:metrics` per `:regex` so you can have an aggregate (m
 
 
 
-stuff I want to do, but haven't yet because I suck
---------------------------------------------------
+stuff I want to do, but haven't yet 
+-----------------------------------
 * When metrics are prefixed by a `/`, ignore the `:metric_prefix`
 * optional logging to carbon/graphite for self-contained metrics
 * write some tests
