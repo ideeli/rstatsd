@@ -38,7 +38,7 @@ def setup_logger ( logfile, loglevel = "INFO"  )
 end
 
 class ProcessCtl
-  STARTCMD, STOPCMD, STATUSCMD = "start","stop","status" 
+  STARTCMD, STOPCMD, STATUSCMD = :start, :stop, :status
 
   attr_accessor :pidfile, :daemonize
 
