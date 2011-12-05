@@ -25,6 +25,8 @@ OSX
 
 If you know how to easily install oniguruma on other platforms, let me know.
 
+You will also need `ps` in your `$PATH`.  
+
 configuration
 -------------
 All configuration is done with a [yaml file](rstatsd/rstatsd-example.yaml).  A basic yaml file looks like this:
@@ -83,13 +85,29 @@ Start it, as a daemon with a config file in /etc
 Stop it
 
     $ ./rstatsd.rb -k stop
+    I'm done
+    Killing pid 6540
+    Killing pid 6542
+    Killing pid 6544
+    Killing pid 6546
+    Killing pid 6548
+    Killing pid 6550
+    Killing pid 6552
+    Killing pid 6538
 
 
-Is it running? (currently kinda busted)
+Is it running? 
 
     $ ./rstatsd.rb -k status
+    rstatsd.rb is running.
     $ echo $?
-    0 
+    1 
+    $ ./rstatsd.rb -k stop
+    ...
+    $ ./rstatsd.rb -k status
+    rstatsd.rb is not running.
+    $ echo $?
+    1 
 
 limiting UDP calls
 ------------------
@@ -117,7 +135,7 @@ You can specify multiple `:metrics` per `:regex` so you can have an aggregate (m
 stuff I want to do, but haven't yet 
 -----------------------------------
 * When metrics are prefixed by a `/`, ignore the `:metric_prefix`
-* optional logging to carbon/graphite for self-contained metrics
+* be able to make `:metric_prefix` take a Proc
 * write some tests
 * document the code
-* be able to make `:metric_prefix` take a Proc
+* optional logging to carbon/graphite for self-contained metrics
