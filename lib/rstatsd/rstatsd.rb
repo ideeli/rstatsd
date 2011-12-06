@@ -66,11 +66,12 @@ module RStatsd
     attr_writer :logger
 
     def initialize ( h )
-      @regex   = which_regex h[:regex]
-      @metrics = h[:metrics] || []
-      @statsd  = h[:statsd] || true
-      @carbon  = !!h[:carbon] 
-      @logger  = h[:logger]
+      @regex     = which_regex h[:regex]
+      @metrics   = h[:metrics] || []
+      @statsd    = h[:statsd] || true
+      @carbon    = !!h[:carbon] 
+      @logger    = h[:logger]
+      @use_value = !!h[:use_value] 
     end
 
     def get_increments ( line, h )
@@ -79,7 +80,7 @@ module RStatsd
       return h unless @matches
       if has_captures?
         @matches.names.each do |name|
-          h = build_and_increment(h, name)
+          h = build_and_increment(h, name )
         end
       else
         h = build_and_increment(h)
@@ -92,9 +93,17 @@ module RStatsd
       h ||= {}
       @metrics.each do |metric|
         metric_name = metric
-        metric_name = prefix_metric_name( [ metric_name, name, @matches[name.to_sym] ] ) if name
-        h[metric_name] ||= 0
-        h[metric_name] += 1
+        if @use_value && name
+          # the value of the named capture will be used as the increment
+          metric_name = prefix_metric_name( [ metric_name, name ] ) 
+          h[metric_name] ||= 0
+          h[metric_name] += @matches[name.to_sym].to_i
+        else
+          # the value of the named capture will be used as a leaf node in the mtric name
+          metric_name = prefix_metric_name( [ metric_name, name, @matches[name.to_sym] ] ) if name
+          h[metric_name] ||= 0
+          h[metric_name] += 1
+        end
       end
       h
     end
