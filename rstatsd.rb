@@ -10,6 +10,7 @@ require 'logger'
 require 'optparse'
 require 'rubygems'
 require 'statsd'
+require 'lib/rstatsd'
 
 # this program needs named capture groups, which are not available
 # in Ruby 1.8.x
@@ -154,11 +155,6 @@ protected
   end
 end
 
-class Hash
-  def prefix_keys ( prefix )
-    Hash[self.map { |k,v| [ "#{prefix}#{k}", v] }]
-  end
-end
 
 module RStatsd
   module Helpers
