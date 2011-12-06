@@ -1,5 +1,7 @@
-require 'lib/rstatsd/hash'
-require 'lib/rstatsd/processctl'
-require 'lib/rstatsd/rstatsd'
-require 'lib/oniguruma'
+%w[hash processctl rstatsd].each  do  |x| 
+  require File.dirname(__FILE__)+"/rstatsd/#{x}" 
+end
 
+%w[oniguruma].each do |x| 
+  require File.dirname(__FILE__)+"/#{x}" 
+end

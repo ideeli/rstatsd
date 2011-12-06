@@ -10,7 +10,7 @@ require 'logger'
 require 'optparse'
 require 'rubygems'
 require 'statsd'
-require 'lib/rstatsd'
+require File.dirname(__FILE__)+'/lib/rstatsd'
 
 
 def setup_logger ( logfile, loglevel = "INFO"  )
