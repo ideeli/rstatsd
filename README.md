@@ -125,6 +125,18 @@ For example,
 
 This will only send data to statsd every 100 lines, thus reducing UDP traffic by 100x.  Never make the `:every` value less than what you expect your minimum traffic will be per aggregation interval as defined in statsd and carbon.
 
+ignore :metric_prefix
+---------------------
+If you want a metric that does not append the `:metric_prefix`, put `/` in front of the metric name
+
+    :metric_prefix: "foo.bar."
+    ...
+    - :regex: '^.*$'
+      :metrics:
+      - "request"     # will result in a metric named 'foo.bar.request'
+      - "/request"    # will result in a metric named 'request'
+    ...
+
 other cool stuff
 ----------------
 

@@ -53,7 +53,9 @@ module RStatsd
     end
 
     def statsd_send ( h )
-      h.prefix_keys(@prefix).each do |k,v| 
+      # prefix keys unless they are prefixed by '/'
+      h.prefix_keys(@prefix) { |k,v| k[0,1] != '/' }.each do |k,v| 
+        k = k.gsub(/^\//,'')  # strip leading '/'
         Statsd.update_counter(k,v)
         logit("Incremented #{k} by #{v}",Logger::DEBUG) 
       end
