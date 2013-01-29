@@ -63,7 +63,7 @@ module RStatsd
 
     # divide all values in Hash h by divisor
     def divide_hash ( h, divisor )
-      Hash[h.map { |k,v| [k, v /= divisor.to_f] }]
+      Hash[h.map { |k,v| [k, v = v.to_f/divisor.to_f] }]
     end
 
     def statsd_send ( h, statsd_type = nil )
@@ -130,7 +130,11 @@ module RStatsd
           # the value of the named capture will be used as the increment
           metric_name = prefix_metric_name( [ metric_name, name ] ) 
           h[metric_name] ||= 0
-          h[metric_name] += @matches[name.to_sym].to_i
+          if @statsd_type == Timer
+            h[metric_name] += @matches[name.to_sym].to_f
+          else
+            h[metric_name] += @matches[name.to_sym].to_i
+          end
         else
           # the value of the named capture will be used as a leaf node in the mtric name
           metric_name = prefix_metric_name( [ metric_name, name, @matches[name.to_sym] ] ) if name
