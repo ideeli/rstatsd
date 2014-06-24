@@ -28,6 +28,7 @@
 #insert  query update delete getmore command flushes mapped  vsize    res faults locked % idx miss %     qr|qw   ar|aw  netIn netOut  conn               set repl       time 
   - :regex: '\s*(?<insert>\d+)\s*(?<query>\d+)\s*(?<update>\d+)\s*(?<delete>\d+)\s*(?<getmore>\d+)\s*(?<command>\d+)\s*(?<flushes>\d+)\s*.*?\s*.*?\s*.*?\s*(?<faults>\d+)'
     :use_value: true
+    :statsd_type: "gauge"
     :metrics: 
     - "mongo"
 :metric_prefix: "com.example.www."
