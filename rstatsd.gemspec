@@ -12,7 +12,6 @@ Gem::Specification.new do |s|
   s.email       = '9minutesnooze@github.com'
   s.files       = `git ls-files`.split("\n")
   s.homepage    = 'https://github.com/ideeli/rstatsd'
-  s.license     = 'MIT'
   s.executables = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
   s.default_executable = 'rstatsd'
