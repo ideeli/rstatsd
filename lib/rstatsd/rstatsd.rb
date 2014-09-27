@@ -30,7 +30,7 @@ module RStatsd
       trap(:INT)  { logit("Caught SIGINT.  Exiting");  Process.kill(:INT,  pipe.pid) }
       trap(:TERM) { logit("Caught SIGTERM.  Exiting"); Process.kill(:TERM, pipe.pid) }
       
-      timers, counters = {}, {}
+      timers, counters, gauges = {}, {}, {}
       
       logit("Starting thread for command #{@command}")
       pipe = IO.popen(@command)
@@ -39,6 +39,8 @@ module RStatsd
           @regexes.each do |r| 
             if r.statsd_type == RegExData::Timer
               timers = r.get_increments(l, timers)
+            elsif r.statsd_type == RegExData::Gauge
+	      gauges = r.get_increments(l, gauges)
             else
               counters = r.get_increments(l, counters)
             end
@@ -48,8 +50,9 @@ module RStatsd
           if (i % @every) == 0
             logit("#{i} lines, sending to statsd", Logger::DEBUG) 
             statsd_send(counters) 
+            statsd_send(gauges, 'gauge') 
             statsd_send(divide_hash(timers, @every), 'timer')
-            timers, counters = {}, {}
+            timers, counters, gauges = {}, {}, {}
           end
           # this is for debugging
 #sleep(rand/100)
@@ -73,6 +76,9 @@ module RStatsd
         if statsd_type == 'timer'
           Statsd.timing(k,v)
           logit("Set timer value #{k} to #{v}",Logger::DEBUG) 
+        elsif statsd_type == 'gauge'
+          Statsd.gauge(k,v)
+          logit("Set gauge value #{k} to #{v}",Logger::DEBUG) 
         else
           Statsd.update_counter(k,v)
           logit("Incremented #{k} by #{v}",Logger::DEBUG) 
@@ -87,13 +93,14 @@ module RStatsd
     attr_writer :logger
     attr_reader :regex, :statsd_type
 
-    Counter, Timer = 1, 2
+    Counter, Timer, Gauge = 1, 2, 3
 
     def initialize ( h )
       @regex       = which_regex h[:regex]
       @metrics     = h[:metrics] || []
       @statsd_type = case h[:statsd_type]
                      when 'timer' then Timer 
+                     when 'gauge' then Gauge
                      else Counter 
                      end
       @statsd      = h[:statsd] || true
@@ -132,7 +139,9 @@ module RStatsd
           h[metric_name] ||= 0
           if @statsd_type == Timer
             h[metric_name] += @matches[name.to_sym].to_f
-          else
+          elsif @statsd_type == Gauge
+            h[metric_name] = @matches[name.to_sym].to_f
+	  else
             h[metric_name] += @matches[name.to_sym].to_i
           end
         else
