@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   groups."
   s.authors     = ["Aaron Brown"]
   s.email       = '9minutesnooze@github.com'
-  s.files       = `git ls-files`.split("\n")
+  s.files       = `git ls-files -- bin lib config`.split("\n")
   s.homepage    = 'https://github.com/ideeli/rstatsd'
   s.executables = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
