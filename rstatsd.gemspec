@@ -1,3 +1,5 @@
+$:.push File.expand_path("../lib", __FILE__)
+
 Gem::Specification.new do |s|
   s.name        = 'rstatsd'
   s.version     = '1.0.0'
@@ -8,7 +10,11 @@ Gem::Specification.new do |s|
   groups."
   s.authors     = ["Aaron Brown"]
   s.email       = '9minutesnooze@github.com'
-  s.files       = ["lib/oniguruma.rb", "lib/rstatsd/rstatsd.rb", "lib/rstatsd/hash.rb", "lib/rstatsd/processctl.rb", "rstatsd.rb"]
+  s.files       = `git ls-files`.split("\n")
   s.homepage    = 'https://github.com/ideeli/rstatsd'
   s.license     = 'MIT'
+  s.executables = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
+  s.require_paths = ["lib"]
+  s.default_executable = 'rstatsd'
+  s.add_dependency 'statsd-client'
 end
