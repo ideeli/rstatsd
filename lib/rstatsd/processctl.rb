@@ -100,7 +100,7 @@ protected
   end
 
   def get_allpids
-    @allpids = `ps -ef |sed 1d`.to_a.map { |x| a = x.strip.split(/\s+/); [a[1].to_i,a[2].to_i] }
+    @allpids = `ps -ef |sed 1d`.lines.to_a.map { |x| a = x.strip.split(/\s+/); [a[1].to_i,a[2].to_i] }
   end
 
   # thar be recursion ahead, matey
