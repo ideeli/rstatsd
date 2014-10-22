@@ -54,13 +54,14 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-
+puts "Loading config from " + options[:cfg_file]
 cfg = YAML.load_file(options[:cfg_file])
+cfg[:cmds] ||= []
 
-Dir[options[:cfg_dir]+'/*.yaml'].each do |file| 
-  include_cfg = YAML.load_file(file) 
+Dir[options[:cfg_dir]+'/*.yaml'].each do |file|
+  include_cfg = YAML.load_file(file)
   puts "Loading " + file
-  cfg = cfg.merge include_cfg
+  cfg[:cmds] = cfg[:cmds].push(include_cfg[0])
 end
 
 Statsd.host = cfg[:statsd][:host]
