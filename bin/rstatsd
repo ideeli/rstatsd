@@ -27,6 +27,7 @@ end
 options = { :cfg_file  => File.dirname(__FILE__)+'/rstatsd.yaml',
             :pidfile   => '/tmp/rstatsd.pid',
             :ctl_cmd   => "start",
+            :cfg_dir   => File.dirname(__FILE__)+'/conf.d',
             :daemonize => false }
 
 
@@ -37,6 +38,9 @@ OptionParser.new do |opts|
   end
   opts.on("-c", "--config FILE", String, "Configuration file (default #{options[:cfg_file]})") do |v|
     options[:cfg_file] = v
+  end
+  opts.on("-g", "--glob-dir FILE", String, "Configuration include directory (default #{options[:cfg_dir]})") do |v|
+    options[:cfg_dir] = v
   end
   opts.on("-p", "--pidfile FILE", String, "PID file (default #{options[:pidfile]})") do |v|
     options[:pidfile] = v
@@ -50,7 +54,14 @@ OptionParser.new do |opts|
   end
 end.parse!
 
+
 cfg = YAML.load_file(options[:cfg_file])
+
+Dir[options[:cfg_dir]+'/*.yaml'].each do |file| 
+  include_cfg = YAML.load_file(file) 
+  puts "Loading " + file
+  cfg = cfg.merge include_cfg
+end
 
 Statsd.host = cfg[:statsd][:host]
 Statsd.port = cfg[:statsd][:port]

@@ -2,8 +2,8 @@ $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = 'rstatsd'
-  s.version     = '1.0.0'
-  s.date        = '2014-09-27'
+  s.version     = '1.0.1'
+  s.date        = '2014-10-22'
   s.summary     = "Tool to turn logs into statsd metrics."
   s.description = "rstatsd is a daemon that takes the output of multiple commands and sends
   the output to statsd based on a regular expressions with optional named capture
