@@ -1,4 +1,6 @@
 module RStatsd
+  ENV['TZ'] = ":/etc/localtime"
+
   module Helpers
     def prefix_metric_name ( pieces )
       pieces.join(".")
@@ -11,13 +13,15 @@ module RStatsd
 
   class Command
     include Helpers
-    attr_accessor :command, :every
+    attr_accessor :command
     def initialize ( h = {}, &block )
-      @command = nil
-      @logger  = h[:logger]
-      @every   = h[:every] || 1
-      @prefix  = h[:prefix]
-      @regexes = []   
+      @command  = nil
+      @logger   = h[:logger]
+      @every    = h[:every] || 1
+      @interval = h[:interval] || nil
+      @prefix   = h[:prefix]
+      @regexes  = []
+
       yield self
     end
 
@@ -32,27 +36,39 @@ module RStatsd
       
       timers, counters, gauges = {}, {}, {}
       
-      logit("Starting thread for command #{@command}")
+      logit("Starting thread for command #{@command}; interval #{@interval}, every #{@every}")
       pipe = IO.popen(@command)
       begin
+        if @interval
+          next_update = Time.now.to_f + @interval
+        end
+
         pipe.each_with_index do |l,i|
           @regexes.each do |r| 
             if r.statsd_type == RegExData::Timer
               timers = r.get_increments(l, timers)
             elsif r.statsd_type == RegExData::Gauge
-	      gauges = r.get_increments(l, gauges)
+              gauges = r.get_increments(l, gauges)
             else
               counters = r.get_increments(l, counters)
             end
           end
           
-          # only send to statsd every x lines - this is to avoid UDP floods
-          if (i % @every) == 0
-            logit("#{i} lines, sending to statsd", Logger::DEBUG) 
+          if @interval
+              do_update = Time.now.to_f >= next_update
+          else
+              do_update = (i % @every) == 0
+          end
+
+          if do_update
+            logit("#{@command}: #{i} lines, sending to statsd", Logger::DEBUG)
             statsd_send(counters) 
             statsd_send(gauges, 'gauge') 
             statsd_send(divide_hash(timers, @every), 'timer')
             timers, counters, gauges = {}, {}, {}
+            if @interval
+              next_update = Time.now.to_f + @interval
+            end
           end
           # this is for debugging
 #sleep(rand/100)
@@ -141,7 +157,7 @@ module RStatsd
             h[metric_name] += @matches[name.to_sym].to_f
           elsif @statsd_type == Gauge
             h[metric_name] = @matches[name.to_sym].to_f
-	  else
+          else
             h[metric_name] += @matches[name.to_sym].to_i
           end
         else
