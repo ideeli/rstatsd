@@ -114,6 +114,7 @@ module RStatsd
     def initialize ( h )
       @regex       = which_regex h[:regex]
       @metrics     = h[:metrics] || []
+      @unmetrics   = h[:unmetrics] || []
       @statsd_type = case h[:statsd_type]
                      when 'timer' then Timer 
                      when 'gauge' then Gauge
@@ -133,13 +134,19 @@ module RStatsd
     def get_increments ( line, h )
       h ||= {}
       @matches = @regex.match(line)
-      return h unless @matches
-      if has_captures?
-        @matches.names.each do |name|
-          h = build_and_increment(h, name )
+      if @matches
+        if has_captures?
+          @matches.names.each do |name|
+            h = build_and_increment(h, name )
+          end
+        else
+          h = build_and_increment(h)
         end
-      else
-        h = build_and_increment(h)
+      elsif @unmetrics
+        @unmetrics.each do |unmetric|
+          h[unmetric] ||= 0
+          h[unmetric] += 1
+        end
       end
       h
     end
@@ -161,7 +168,7 @@ module RStatsd
             h[metric_name] += @matches[name.to_sym].to_i
           end
         else
-          # the value of the named capture will be used as a leaf node in the mtric name
+          # the value of the named capture will be used as a leaf node in the metric name
           metric_name = prefix_metric_name( [ metric_name, name, @matches[name.to_sym] ] ) if name
           h[metric_name] ||= 0
           h[metric_name] += 1
