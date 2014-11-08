@@ -137,7 +137,11 @@ module RStatsd
       if @matches
         if has_captures?
           @matches.names.each do |name|
-            h = build_and_increment(h, name )
+            # If we use nested captures, we can get empty MatchData members,
+            # we should skip those.
+            if !@matches[name.to_sym].nil?
+              h = build_and_increment(h, name )
+            end
           end
         else
           h = build_and_increment(h)
