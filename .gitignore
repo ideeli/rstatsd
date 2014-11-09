@@ -1,6 +1,6 @@
 rstatsd.yaml
 rstatsd-cfg.rb
-rstatsd-1.0.0.gem
+*.gem
 rstatsd-1.0.0.tar.gz
 rstatsd-1.0.0/
 ruby-rstatsd-1.0.0/
