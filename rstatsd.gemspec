@@ -2,13 +2,13 @@ $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = 'rstatsd'
-  s.version     = '1.0.2'
-  s.date        = '2014-10-22'
+  s.version     = '1.0.3'
+  s.date        = '2014-11-09'
   s.summary     = "Tool to turn logs into statsd metrics."
   s.description = "rstatsd is a daemon that takes the output of multiple commands and sends
   the output to statsd based on a regular expressions with optional named capture
   groups."
-  s.authors     = ["Aaron Brown"]
+  s.authors     = ["Aaron Brown", "Ulrik Holmen", "Stefan Bergstrom"]
   s.email       = '9minutesnooze@github.com'
   s.files       = `git ls-files -- bin lib config`.split("\n")
   s.homepage    = 'https://github.com/ideeli/rstatsd'
