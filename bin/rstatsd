@@ -73,6 +73,7 @@ logger   = setup_logger(cfg[:logfile] || STDOUT, cfg[:loglevel] || "INFO")
 
 cfg[:cmds].each do |cmd|
   params = { :every  => cmd[:every], 
+             :interval => cmd[:interval],
              :logger => logger, 
              :prefix => cfg[:metric_prefix] }
 
